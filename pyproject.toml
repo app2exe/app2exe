@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=61.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "app2exe"
+version = "0.1.0"
+description = "Python betiklerini hızlıca executable (.exe) yapan CLI aracı."
+authors = [{ name = "Aydın Eli Denk" }]
+requires-python = ">=3.6"
+dependencies = [
+    "pyinstaller"
+]
+
+[project.scripts]
+app2exe = "app2exe.cli:main"
