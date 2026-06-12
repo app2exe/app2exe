@@ -1,0 +1,49 @@
+name: Cross-Platform Build (app2exe)
+
+# Kodu GitHub'a her gönderdiğinde (push) bu süreç otomatik tetiklenir
+on:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  compile:
+    name: Derleme İşlemi
+    # Matrix kullanarak aynı anda hem Windows hem macOS sanal bilgisayarları açıyoruz
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest]
+    
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    # 1. GitHub'ın sanal bilgisayarı senin kodlarını kendi içine kopyalar
+    - name: Depoyu Klonla
+      uses: actions/checkout@v4
+
+    # 2. Sanal bilgisayara Python kurulur (Stabil olması için 3.11 kuruyoruz)
+    - name: Python Kur
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    # 3. Gerekli kütüphaneler (PyInstaller) sanal makineye yüklenir
+    - name: Bağımlılıkları Yükle
+      run: |
+        python -m pip install --upgrade pip
+        pip install pyinstaller
+
+    # 4. Senin yazdığın cli.py mantığıyla derleme başlar
+    - name: Uygulamayı Paketle (Windows)
+      if: matrix.os == 'windows-latest'
+      run: python app2exe/cli.py test.py
+
+    - name: Uygulamayı Paketle (macOS)
+      if: matrix.os == 'macos-latest'
+      run: python app2exe/cli.py test.py
+
+    # 5. Oluşan .exe ve .app dosyalarını GitHub senin için saklar ve link üretir
+    - name: Çıktıları GitHub'a Yükle
+      uses: actions/upload-artifact@v4
+      with:
+        name: app2exe-outputs-${{ matrix.os }}
+        path: dist/
